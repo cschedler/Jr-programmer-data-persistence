@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System;
 
 public class MainManager : MonoBehaviour
 {
@@ -11,6 +13,7 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text BestScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -18,7 +21,25 @@ public class MainManager : MonoBehaviour
     
     private bool m_GameOver = false;
 
-    
+    public static MainManager Instance;
+
+    public Button menuButton;
+
+    public string userName;
+
+    //public void Awake()
+    //{
+    //    if (Instance != null)
+    //    {
+    //        Destroy(gameObject);
+    //        return;
+    //    }
+        
+    //    Instance = this;
+    //    DontDestroyOnLoad(gameObject);
+    //}
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -36,6 +57,14 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        menuButton.onClick.AddListener(ReturnToMenu);
+        userName = StandingController.standingInstance.userStanding.userName;
+
+        if (!String.IsNullOrEmpty(userName)) 
+        {
+            BestScore(userName, StandingController.standingInstance.userStanding.highScore);
+        }
     }
 
     private void Update()
@@ -45,7 +74,7 @@ public class MainManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 m_Started = true;
-                float randomDirection = Random.Range(-1.0f, 1.0f);
+                float randomDirection = UnityEngine.Random.Range(-1.0f, 1.0f);
                 Vector3 forceDir = new Vector3(randomDirection, 1, 0);
                 forceDir.Normalize();
 
@@ -71,6 +100,20 @@ public class MainManager : MonoBehaviour
     public void GameOver()
     {
         m_GameOver = true;
+        StandingController.standingInstance.userStanding.highScore = m_Points;
+        StandingController.standingInstance.SaveStanding();
         GameOverText.SetActive(true);
+    }
+
+    public void ReturnToMenu()
+    {
+        StandingController.standingInstance.userStanding.highScore = m_Points;
+        StandingController.standingInstance.SaveStanding();
+        SceneManager.LoadScene(0);
+    }
+
+    void BestScore(string name, int score)
+    {
+        BestScoreText.text = "Best Score: " + name + ": " + score;
     }
 }
